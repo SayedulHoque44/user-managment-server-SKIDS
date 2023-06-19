@@ -3,7 +3,7 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors')
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 // middleware 
@@ -31,10 +31,40 @@ async function run() {
     // Collection 
     const usersCollection = client.db("skidsDb").collection("users")
 
+    //  User Related 
+    // User POST
     app.post('/users',async(req,res)=>{
         const newUser = req.body
 
         const result = await usersCollection.insertOne(newUser)
+        res.send(result)
+    })
+    // User GET
+    app.get('/users',async(req,res)=>{
+
+        const result = await usersCollection.find().toArray()
+        res.send(result)
+    })
+    // User DELETE
+    app.delete('/users/:id',async(req,res)=>{
+        const id = req.params.id
+        const query = {_id: new ObjectId(id)}
+        const result = await usersCollection.deleteOne(query)
+        res.send(result)
+    })
+    // User PATCH
+    app.patch('/users/:id',async(req,res)=>{
+        const id = req.params.id
+        const user = req.body
+        const query = {_id: new ObjectId(id)}
+        const updateDoc = {
+            $set:{
+                name:user.name,
+                email:user.email,
+                phone_number:user.phone_number
+            }
+        }
+        const result = await usersCollection.updateOne(query,updateDoc)
         res.send(result)
     })
 
